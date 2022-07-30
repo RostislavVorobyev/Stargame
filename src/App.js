@@ -7,9 +7,9 @@ function PlayNumber(props) {
       className="number"
       style={{ backgroundColor: colors[props.status] }}
       onClick={() => props.onClick(props.id, props.status)}
-      >
-        {props.id}
-      </button>
+    >
+      {props.id}
+    </button>
   );
 }
 
@@ -22,12 +22,21 @@ function StarDisplay(props) {
     </>)
 }
 
+function PlayAgain(props) {
+  return (
+    <div className="game-done">
+      <button onClick={props.onClick}>Play Again</button>
+    </div>
+  );
+}
+
 function App() {
   const [stars, setStars] = useState(random(1, 9));
   const [candidateNums, setCandidates] = useState([]);
   const [availableNums, setAvailable] = useState(range(1, 9));
 
   const candidatesAreWrong = sum(candidateNums) > stars;
+  const gameIsDone = availableNums.length === 0;
 
   const numberStatus = (number) => {
     if (!availableNums.includes(number)) {
@@ -44,7 +53,7 @@ function App() {
       return;
     }
 
-		const newCandidateNums =
+    const newCandidateNums =
       currentStatus === 'available'
         ? candidateNums.concat(number)
         : candidateNums.filter(cn => cn !== number);
@@ -61,6 +70,12 @@ function App() {
     }
   };
 
+  const resetGame = () => {
+    setStars(random(1, 9));
+    setCandidates([]);
+    setAvailable(range(1, 9));
+  }
+
   return (
     <div className="game">
       <div className="help">
@@ -68,7 +83,7 @@ function App() {
       </div>
       <div className="body">
         <div className="left">
-          <StarDisplay starsCount={stars} />
+          {gameIsDone ? (<PlayAgain onClick={resetGame} />) : (<StarDisplay starsCount={stars} />)}
         </div>
         <div className="right">
           {range(1, 9).map(id =>
@@ -98,7 +113,7 @@ const random = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
 
 const sum = (arr) => arr.reduce((acc, curr) => acc + curr, 0);
 
-const randomSumIn= (arr, max) => {
+const randomSumIn = (arr, max) => {
   const sets = [[]];
   const sums = [];
   for (let i = 0; i < arr.length; i++) {
