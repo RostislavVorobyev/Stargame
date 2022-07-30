@@ -3,9 +3,12 @@ import './App.css';
 
 function PlayNumber(props) {
   return (
-    <button className="number" onClick={() => alert(props.id)}>{props.id}</button>
+    <button 
+    className="number" 
+    style={{backgroundColor : colors[props.status]}}
+    onClick={() => alert(props.id)}>{props.id}</button>
   );
-}
+} 
 
 function StarDisplay(props) {
   return (
@@ -18,6 +21,21 @@ function StarDisplay(props) {
 
 function App() {
   const [stars, setStars] = useState(random(1, 9));
+  const [candidateNums, setCandidates] = useState([]);
+  const [availableNums, setAvailable] = useState(range(1,9));
+
+  const candidatesAreWrong = sum(candidateNums) > stars;
+  
+  const numberStatus = (number) => {
+  	if (!availableNums.includes(number)) {
+    	return 'used';
+    }
+    if (candidateNums.includes(number)) {
+    	return candidatesAreWrong ? 'wrong': 'candidate';
+    }
+    return 'available';
+  };
+
   return (
     <div className="game">
       <div className="help">
@@ -29,7 +47,7 @@ function App() {
         </div>
         <div className="right">
           {range(1, 9).map(id =>
-            <PlayNumber id={id} />
+            <PlayNumber status={numberStatus(id)} id={id} />
           )}
         </div>
       </div>
@@ -38,9 +56,18 @@ function App() {
   );
 };
 
+const colors = {
+  available: 'lightgray',
+  used: 'lightgreen',
+  wrong: 'lightcoral',
+  candidate: 'deepskyblue',
+};
+
 const range = (min, max) => Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
 const random = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+
+const sum = (arr) => arr.reduce((acc, curr) => acc + curr, 0);
 
 
 export default App;
