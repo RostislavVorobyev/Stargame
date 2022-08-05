@@ -35,7 +35,12 @@ function PlayAgain(props) {
   );
 }
 
-function App() {
+const StarMatch = () => {
+	const [gameId, setGameId] = useState(1);
+	return <Game key={gameId} startNewGame={() => setGameId(gameId + 1)}/>;
+}
+
+function Game(props) {
   const [stars, setStars] = useState(random(1, 9));
   const [candidateNums, setCandidates] = useState([]);
   const [availableNums, setAvailable] = useState(range(1, 9));
@@ -45,8 +50,6 @@ function App() {
   const gameStatus = availableNums.length === 0 
   ? 'won' 
   : secondsLeft === 0 ? 'lost' : 'active';
-
-
 
 	useEffect(() => {
   	if (secondsLeft > 0 && availableNums.length > 0) {
@@ -67,7 +70,7 @@ function App() {
   };
 
   const onNumberClick = (number, currentStatus) => {
-    if (currentStatus === 'used') {
+    if (currentStatus === 'used' || gameStatus !== 'active') {
       return;
     }
 
@@ -88,21 +91,14 @@ function App() {
     }
   };
 
-  const resetGame = () => {
-    setStars(random(1, 9));
-    setCandidates([]);
-    setAvailable(range(1, 9));
-    setSecondsLeft(10);
-  }
-
   return (
-    <div className="game">
+    <div className="game" id="game" >
       <div className="help">
         Pick 1 or more numbers that sum to the number of stars
       </div>
       <div className="body">
         <div className="left">
-          {gameStatus !== 'active' ? (<PlayAgain gameStatus={gameStatus} onClick={resetGame} />) : (<StarDisplay starsCount={stars} />)}
+          {gameStatus !== 'active' ? (<PlayAgain gameStatus={gameStatus} onClick={props.startNewGame} />) : (<StarDisplay starsCount={stars} />)}
         </div>
         <div className="right">
           {range(1, 9).map(id =>
@@ -148,5 +144,4 @@ const randomSumIn = (arr, max) => {
   return sums[random(0, sums.length - 1)];
 }
 
-
-export default App;
+export default StarMatch;
