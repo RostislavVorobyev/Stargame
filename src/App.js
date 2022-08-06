@@ -40,25 +40,49 @@ const StarMatch = () => {
 	return <Game key={gameId} startNewGame={() => setGameId(gameId + 1)}/>;
 }
 
-function Game(props) {
+const useGameState = timeLimit => {
   const [stars, setStars] = useState(random(1, 9));
   const [candidateNums, setCandidates] = useState([]);
   const [availableNums, setAvailable] = useState(range(1, 9));
   const [secondsLeft, setSecondsLeft] = useState(10);
+
+  useEffect(() => {
+    if (secondsLeft > 0 && availableNums.length > 0) {
+      const timerId = setTimeout(() => setSecondsLeft(secondsLeft - 1), 1000);
+      return () => clearTimeout(timerId);
+    }
+  });
+
+  const setGameState = (newCandidateNums) => {
+    if (sum(newCandidateNums) !== stars) {
+      setCandidates(newCandidateNums);
+    } else {
+      const newAvailableNums = availableNums.filter(
+        n => !newCandidateNums.includes(n)
+      );
+      setStars(randomSumIn(newAvailableNums, 9));
+      setAvailable(newAvailableNums);
+      setCandidates([]);
+    }
+  };
+
+  return { stars, availableNums, candidateNums, secondsLeft, setGameState };
+};
+
+function Game(props) {
+  const {
+    stars,
+    availableNums,
+    candidateNums,
+    secondsLeft,
+    setGameState
+  } = useGameState();
 
   const candidatesAreWrong = sum(candidateNums) > stars;
   const gameStatus = availableNums.length === 0 
   ? 'won' 
   : secondsLeft === 0 ? 'lost' : 'active';
 
-	useEffect(() => {
-  	if (secondsLeft > 0 && availableNums.length > 0) {
-      const timerId = setTimeout(() => {
-	      setSecondsLeft(secondsLeft - 1);
-      }, 1000);
-    	return () => clearTimeout(timerId);
-  	}
-  });  
   const numberStatus = (number) => {
     if (!availableNums.includes(number)) {
       return 'used';
@@ -79,19 +103,10 @@ function Game(props) {
         ? candidateNums.concat(number)
         : candidateNums.filter(cn => cn !== number);
 
-    if (sum(newCandidateNums) !== stars) {
-      setCandidates(newCandidateNums);
-    } else {
-      const newAvailableNums = availableNums.filter(
-        n => !newCandidateNums.includes(n)
-      );
-      setStars(randomSumIn(newAvailableNums, 9));
-      setAvailable(newAvailableNums);
-      setCandidates([]);
-    }
+    setGameState(newCandidateNums);
   };
 
-  return (
+    return (
     <div className="game" id="game" >
       <div className="help">
         Pick 1 or more numbers that sum to the number of stars
